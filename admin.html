@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Sahara FM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #111111;
+            --border: #1a1a1a;
+            --text: #fff;
+            --text-secondary: #aaa;
+            --accent: #c4956a;
+            --green: #22c55e;
+            --red: #ef4444;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100dvh;
+            padding: 16px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: var(--accent);
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .card h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+        
+        .form-group {
+            margin-bottom: 14px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        .btn:active { opacity: 0.8; }
+        
+        .btn-red {
+            background: var(--red);
+            color: #fff;
+        }
+        
+        .btn-green {
+            background: var(--green);
+            color: #000;
+        }
+        
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status.online {
+            background: rgba(34,197,94,0.1);
+            color: var(--green);
+            border: 1px solid rgba(34,197,94,0.3);
+        }
+        
+        .status.offline {
+            background: rgba(239,68,68,0.1);
+            color: var(--red);
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 13px;
+        }
+        
+        .info-row:last-child { border-bottom: none; }
+        
+        .info-row span:first-child { color: #666; }
+        .info-row span:last-child { color: #fff; font-weight: 600; }
+        
+        .section-divider {
+            border-top: 1px solid #1a1a1a;
+            margin: 16px 0;
+            padding-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎛️ Admin - Sahara FM</h1>
+        
+        <!-- Statut -->
+        <div class="card">
+            <h2>📡 Statut du direct</h2>
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                <span class="status online" id="streamStatus">
+                    <span class="dot"></span>
+                    <span id="streamStatusText">En ligne</span>
+                </span>
+                <span style="font-size:13px;color:#666;" id="currentListeners">Auditeurs : --</span>
+            </div>
+            <div class="section-divider">
+                <div class="info-row">
+                    <span>Stream URL</span>
+                    <span id="streamUrlDisplay">https://caster.fm/sahar_fm_agadez</span>
+                </div>
+                <div class="info-row">
+                    <span>Dernière connexion</span>
+                    <span id="lastConnection">--</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configuration flux -->
+        <div class="card">
+            <h2>🔗 Configuration du flux audio</h2>
+            <div class="form-group">
+                <label>URL du flux audio (MP3/AAC)</label>
+                <input type="text" id="streamUrl" placeholder="https://..." value="https://caster.fm/sahar_fm_agadez">
+            </div>
+            <div class="form-group">
+                <label>Type de serveur</label>
+                <select id="serverType">
+                    <option value="casterfm">Caster.fm</option>
+                    <option value="shoutcast">Shoutcast</option>
+                    <option value="icecast">Icecast</option>
+                    <option value="direct">Lien direct MP3/AAC</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Port (si nécessaire)</label>
+                <input type="text" id="streamPort" placeholder="8000">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe admin (optionnel)</label>
+                <input type="password" id="adminPassword" placeholder="Mot de passe du serveur">
+            </div>
+            <button class="btn" onclick="saveStreamConfig()">💾 Sauvegarder la configuration</button>
+            <button class="btn btn-green" style="margin-left:8px;" onclick="testStream()">🔍 Tester le flux</button>
+        </div>
+        
+        <!-- Gestion des programmes -->
+        <div class="card">
+            <h2>📅 Programme actuel</h2>
+            <div class="form-group">
+                <label>Nom de l'émission</label>
+                <input type="text" id="showName" placeholder="Ex: Sahara Matinal" value="Sahara Matinal">
+            </div>
+            <div class="form-group">
+                <label>Animateur</label>
+                <input type="text" id="showHost" placeholder="Ex: Amadou" value="Amadou & l'équipe">
+            </div>
+            <div class="form-group">
+                <label>Heure début</label>
+                <input type="time" id="showStart" value="06:00">
+            </div>
+            <div class="form-group">
+                <label>Heure fin</label>
+                <input type="time" id="showEnd" value="10:00">
+            </div>
+            <button class="btn" onclick="updateCurrentShow()">📻 Mettre à jour l'émission</button>
+        </div>
+        
+        <!-- Infos -->
+        <div class="card">
+            <h2>📰 Infos / Actualités</h2>
+            <div class="form-group">
+                <label>Titre de l'info</label>
+                <input type="text" id="infoTitle" placeholder="Ex: 1AT : Températures records">
+            </div>
+            <div class="form-group">
+                <label>Détail</label>
+                <textarea id="infoDetail" placeholder="Détail de l'information..."></textarea>
+            </div>
+            <button class="btn" onclick="addInfo()">➕ Ajouter l'info</button>
+        </div>
+        
+        <!-- Actions -->
+        <div class="card">
+            <h2>⚡ Actions rapides</h2>
+            <button class="btn btn-red" onclick="restartStream()">🔄 Redémarrer le flux</button>
+            <button class="btn" style="margin-left:8px;" onclick="viewSite()">🌐 Voir le site</button>
+            <button class="btn" style="margin-left:8px;" onclick="clearCache()">🗑️ Vider le cache</button>
+        </div>
+        
+        <!-- Logs -->
+        <div class="card">
+            <h2>📋 Logs</h2>
+            <div id="logArea" style="font-size:11px;color:#666;max-height:150px;overflow-y:auto;">
+                <div>[Système] Page admin chargée</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Ajouter un log
+        function addLog(msg) {
+            const logArea = document.getElementById('logArea');
+            const time = new Date().toLocaleTimeString();
+            logArea.innerHTML += `<div>[${time}] ${msg}</div>`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        // Sauvegarder config flux
+        function saveStreamConfig() {
+            const url = document.getElementById('streamUrl').value;
+            const type = document.getElementById('serverType').value;
+            const port = document.getElementById('streamPort').value;
+            
+            const config = {
+                url: url,
+                type: type,
+                port: port,
+                updated: new Date().toISOString()
+            };
+            
+            localStorage.setItem('sfm-stream-config', JSON.stringify(config));
+            document.getElementById('streamUrlDisplay').textContent = url;
+            addLog('✅ Configuration flux sauvegardée : ' + url);
+            alert('Configuration sauvegardée !');
+        }
+        
+        // Tester le flux
+        function testStream() {
+            const url = document.getElementById('streamUrl').value;
+            addLog('🔍 Test du flux : ' + url);
+            
+            const audio = new Audio(url);
+            audio.volume = 0.3;
+            
+            audio.addEventListener('playing', () => {
+                addLog('✅ Flux OK - Lecture en cours');
+                document.getElementById('streamStatusText').textContent = 'En ligne';
+                document.getElementById('streamStatus').className = 'status online';
+                alert('✅ Flux fonctionnel !');
+                audio.pause();
+            });
+            
+            audio.addEventListener('error', () => {
+                addLog('❌ Erreur flux - Vérifiez l\'URL');
+                document.getElementById('streamStatusText').textContent = 'Hors ligne';
+                document.getElementById('streamStatus').className = 'status offline';
+                alert('❌ Flux inaccessible. Vérifiez l\'URL.');
+            });
+            
+            audio.play().catch(err => {
+                addLog('❌ Erreur lecture : ' + err.message);
+                alert('❌ Impossible de lire le flux.');
+            });
+        }
+        
+        // Mettre à jour l'émission
+        function updateCurrentShow() {
+            const name = document.getElementById('showName').value;
+            const host = document.getElementById('showHost').value;
+            const start = document.getElementById('showStart').value;
+            const end = document.getElementById('showEnd').value;
+            
+            const show = { name, host, start, end, updated: new Date().toISOString() };
+            localStorage.setItem('sfm-current-show', JSON.stringify(show));
+            addLog('📻 Émission mise à jour : ' + name + ' - ' + host);
+            alert('Émission mise à jour !');
+        }
+        
+        // Ajouter une info
+        function addInfo() {
+            const title = document.getElementById('infoTitle').value;
+            const detail = document.getElementById('infoDetail').value;
+            
+            if (!title) {
+                alert('Veuillez entrer un titre');
+                return;
+            }
+            
+            const info = { title, detail, date: new Date().toISOString() };
+            let infos = JSON.parse(localStorage.getItem('sfm-infos') || '[]');
+            infos.unshift(info);
+            if (infos.length > 10) infos = infos.slice(0, 10);
+            localStorage.setItem('sfm-infos', JSON.stringify(infos));
+            
+            document.getElementById('infoTitle').value = '';
+            document.getElementById('infoDetail').value = '';
+            addLog('📰 Info ajoutée : ' + title);
+            alert('Info ajoutée !');
+        }
+        
+        // Redémarrer le flux
+        function restartStream() {
+            addLog('🔄 Redémarrage du flux...');
+            alert('Flux redémarré (simulation)');
+        }
+        
+        // Voir le site
+        function viewSite() {
+            window.open('index.html', '_blank');
+        }
+        
+        // Vider le cache
+        function clearCache() {
+            if (confirm('Vider tout le cache ?')) {
+                localStorage.clear();
+                addLog('🗑️ Cache vidé');
+                alert('Cache vidé !');
+            }
+        }
+        
+        // Init
+        function init() {
+            const config = JSON.parse(localStorage.getItem('sfm-stream-config') || '{}');
+            if (config.url) {
+                document.getElementById('streamUrl').value = config.url;
+                document.getElementById('serverType').value = config.type || 'casterfm';
+                document.getElementById('streamPort').value = config.port || '';
+                document.getElementById('streamUrlDisplay').textContent = config.url;
+            }
+            
+            const show = JSON.parse(localStorage.getItem('sfm-current-show') || '{}');
+            if (show.name) {
+                document.getElementById('showName').value = show.name;
+                document.getElementById('showHost').value = show.host || '';
+                document.getElementById('showStart').value = show.start || '';
+                document.getElementById('showEnd').value = show.end || '';
+            }
+            
+            document.getElementById('lastConnection').textContent = new Date().toLocaleString();
+            addLog('✅ Admin prêt');
+        }
+        
+        init();
+    </script>
+</body>
+</html>
