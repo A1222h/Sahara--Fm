@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="description" content="Sahara FM 97 MHz - La Radio des temps modernes - Agadez, Niger">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sahara FM">
+    
+    <title>Sahara FM 97 MHz • Agadez</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="logo-192.png">
+    <link rel="apple-touch-icon" href="logo-192.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #111111;
+            --bg-card2: #161616;
+            --border: #1a1a1a;
+            --border-light: #222;
+            --text: #ffffff;
+            --text-secondary: #aaaaaa;
+            --text-muted: #666666;
+            --accent: #c4956a;
+            --accent-bright: #d4a574;
+            --green: #22c55e;
+            --red: #ef4444;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100dvh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px 16px;
+            padding-bottom: calc(90px + var(--safe-bottom));
+        }
+        
+        /* ============ TOAST ============ */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 12px 24px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            z-index: 200;
+            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        /* ============ HEADER ============ */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .logo-img {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #1a1a1a;
+            box-shadow: 0 0 20px rgba(196,149,106,0.15);
+        }
+        
+        .header-text .slogan {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        
+        .header-text h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #fff;
+            line-height: 1.1;
+        }
+        
+        .header-text .freq {
+            font-size: 10px;
+            color: #555;
+            letter-spacing: 0.08em;
+            font-weight: 500;
+        }
+        
+        /* ============ FREQUENCY BARS (VU METER) ============ */
+        .vu-meter {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 2px;
+            height: 36px;
+            margin-bottom: 18px;
+        }
+        
+        .vu-bar {
+            width: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            height: 4px;
+            transition: height 0.08s ease-out;
+            box-shadow: 0 0 6px rgba(196,149,106,0.5);
+        }
+        
+        .playing .vu-bar {
+            animation: vuDance 0.7s ease-in-out infinite;
+        }
+        
+        .playing .vu-bar:nth-child(odd) { animation-duration: 0.55s; }
+        .playing .vu-bar:nth-child(3n) { animation-duration: 0.8s; }
+        .playing .vu-bar:nth-child(5n) { animation-duration: 0.6s; }
+        .playing .vu-bar:nth-child(7n) { animation-duration: 0.9s; }
+        .playing .vu-bar:nth-child(2n) { animation-delay: 0.1s; }
+        .playing .vu-bar:nth-child(4n) { animation-delay: 0.2s; }
+        
+        @keyframes vuDance {
+            0%, 100% { height: 4px; opacity: 0.3; }
+            25% { height: 32px; opacity: 1; }
+            50% { height: 8px; opacity: 0.5; }
+            75% { height: 24px; opacity: 0.9; }
+        }
+        
+        /* ============ STATS ============ */
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-box {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+        }
+        
+        .stat-box .stat-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        
+        .stat-box .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+        }
+        
+        /* ============ STUDIO BAR ============ */
+        .studio-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+        }
+        
+        .studio-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .direct-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.3);
+            padding: 6px 12px;
+            border-radius: 100px;
+        }
+        
+        .direct-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes dotPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+            50% { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+        }
+        
+        .direct-text {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--green);
+        }
+        
+        .studio-loc {
+            font-size: 11px;
+            font-weight: 600;
+            color: #aaa;
+            letter-spacing: 0.04em;
+        }
+        
+        .studio-clock {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        /* ============ NAV TABS ============ */
+        .nav-tabs {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 12px 6px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border: none;
+            background: transparent;
+            min-width: 55px;
+        }
+        
+        .nav-tab.active {
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #2a2a2a;
+        }
+        
+        /* ============ PLAYER ============ */
+        .player-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .disc-mini {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #1a1a1a;
+            flex-shrink: 0;
+        }
+        
+        .disc-mini img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .playing .disc-mini {
+            animation: discSpin 8s linear infinite;
+        }
+        
+        @keyframes discSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .player-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #ddd;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .player-subtitle {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .player-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .btn-play-round {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            color: #000;
+        }
+        
+        .btn-play-round:active {
+            transform: scale(0.88);
+            box-shadow: 0 0 20px rgba(196,149,106,0.5);
+        }
+        
+        .btn-small-round {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid #2a2a2a;
+            color: #777;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .btn-small-round:active {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        /* ============ CONTENT ============ */
+        .content-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .section-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .section-title-content {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        
+        .volume-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+        
+        .volume-bar i {
+            color: #555;
+            font-size: 13px;
+        }
+        
+        .volume-bar input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 5px;
+            background: #1a1a1a;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .volume-bar input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+        }
+        
+        .volume-number {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+            min-width: 36px;
+            text-align: right;
+        }
+        
+        .info-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #141414;
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .info-line:last-child {
+            border-bottom: none;
+        }
+        
+        .info-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+        
+        .info-bold {
+            font-weight: 600;
+            color: #ccc;
+        }
+        
+        /* ============ CHAT ============ */
+        .chat-box {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        
+        .chat-msg {
+            padding: 7px 10px;
+            border-radius: 10px;
+            margin-bottom: 5px;
+            font-size: 10px;
+        }
+        
+        .chat-msg.radio {
+            background: rgba(196,149,106,0.08);
+            border: 1px solid rgba(196,149,106,0.15);
+            color: var(--accent-bright);
+        }
+        
+        .chat-msg.user {
+            background: #141414;
+            color: #aaa;
+        }
+        
+        .chat-row {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .chat-row input {
+            flex: 1;
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #fff;
+            outline: none;
+        }
+        
+        .chat-row input:focus {
+            border-color: #2a2a2a;
+        }
+        
+        .chat-row button {
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: #000;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        
+        /* ============ BOTTOM NAV ============ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10,10,10,0.97);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid #141414;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 8px calc(8px + var(--safe-bottom));
+            z-index: 50;
+        }
+        
+        .bottom-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #444;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        
+        .bottom-item i {
+            font-size: 17px;
+        }
+        
+        .bottom-item.active {
+            color: #fff;
+        }
+        
+        /* ============ SCROLLBAR ============ */
+        ::-webkit-scrollbar { width: 0; height: 0; }
+        
+        /* ============ TABS ============ */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toastEl"><span id="toastMsg"></span></div>
+
+<!-- ============ HEADER ============ -->
+<div class="header">
+    <img src="logo-192.png" alt="Sahara FM Logo" class="logo-img">
+    <div class="header-text">
+        <div class="slogan">LA RADIO DES TEMPS MODERNES</div>
+        <h1>SAHARA FM</h1>
+        <div class="freq">97.0 MHz • Agadez, Niger</div>
+    </div>
+</div>
+
+<!-- ============ VU METER (BARRES DE FRÉQUENCE) ============ -->
+<div class="vu-meter" id="vuMeter">
+    <div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div>
+</div>
+
+<!-- ============ STATS ============ -->
+<div class="stats-row">
+    <div class="stat-box">
+        <div class="stat-label">FRÉQUENCE</div>
+        <div class="stat-value">97.0 MHz</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">AUDITEURS</div>
+        <div class="stat-value" id="auditeursCount">+500k</div>
+    </div>
+</div>
+
+<!-- ============ STUDIO BAR ============ -->
+<div class="studio-bar">
+    <div class="studio-left">
+        <div class="direct-badge" id="directBadge">
+            <span class="direct-dot"></span>
+            <span class="direct-text">EN DIRECT</span>
+        </div>
+        <span class="studio-loc">STUDIO AGADEZ</span>
+    </div>
+    <div class="studio-clock" id="studioClock">21:53</div>
+</div>
+
+<!-- ============ NAV TABS ============ -->
+<div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" data-tab="direct">DIRECT</button>
+    <button class="nav-tab" data-tab="grille">GRILLE</button>
+    <button class="nav-tab" data-tab="infos">INFOS</button>
+    <button class="nav-tab" data-tab="archives">ARCHIVES</button>
+    <button class="nav-tab" data-tab="contact">CONTACT</button>
+</div>
+
+<!-- ============ DIRECT TAB ============ -->
+<div class="tab-content active" id="tab-direct">
+    <!-- Player -->
+    <div class="player-card" id="playerCard">
+        <div class="disc-mini">
+            <img src="logo-192.png" alt="On Air">
+        </div>
+        <div class="player-info">
+            <div class="player-title" id="showName">Sahara Matinal</div>
+            <div class="player-subtitle" id="showInfo">Amadou & l'équipe • 06:00-10:00</div>
+            <div class="player-buttons">
+                <button class="btn-small-round" id="btnVolDown"><i class="fas fa-volume-down"></i></button>
+                <button class="btn-play-round" id="btnPlay"><i class="fas fa-play" id="btnPlayIcon"></i></button>
+                <button class="btn-small-round" id="btnVolUp"><i class="fas fa-volume-up"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Volume -->
+    <div class="content-section">
+        <div class="section-label">VOLUME</div>
+        <div class="volume-bar">
+            <i class="fas fa-volume-down"></i>
+            <input type="range" min="0" max="100" value="85" id="sliderVolume">
+            <span class="volume-number" id="volValue">85%</span>
+        </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="content-section">
+        <div class="section-label">CHAT</div>
+        <div class="chat-box" id="chatBox">
+            <div class="chat-msg radio">Sahara FM : Bienvenue sur le direct ! 🏜️</div>
+        </div>
+        <div class="chat-row">
+            <input type="text" id="chatInput" placeholder="Votre message...">
+            <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ GRILLE TAB ============ -->
+<div class="tab-content" id="tab-grille">
+    <div class="content-section">
+        <div class="section-title-content">Programme du jour</div>
+        <div id="grilleList"></div>
+    </div>
+</div>
+
+<!-- ============ INFOS TAB ============ -->
+<div class="tab-content" id="tab-infos">
+    <div class="content-section">
+        <div class="section-title-content">Actualités Agadez</div>
+        <div class="info-line"><span class="info-dot"></span> <span class="info-bold">1AT :</span> Températures records prévues pour la semaine</div>
+        <div class="info-line"><span class="info-dot"></span> <span class="info-bold">FESTIVAL :</span> Ouverture des inscriptions au festival du désert</div>
+        <div class="info-line"><span class="info-dot"></span> <span class="info-bold">EAU :</span> Nouveau forage inauguré à Tchirozérine</div>
+        <div class="info-line"><span class="info-dot"></span> <span class="info-bold">MARCHÉ :</span> Artisanat local ce samedi</div>
+        <div class="info-line"><span class="info-dot"></span> <span class="info-bold">SPORT :</span> Tournoi de lutte traditionnelle dimanche</div>
+    </div>
+</div>
+
+<!-- ============ ARCHIVES TAB ============ -->
+<div class="tab-content" id="tab-archives">
+    <div class="content-section">
+        <div class="section-title-content">Émissions récentes</div>
+        <div class="info-line"><span class="info-dot"></span> Sahara Matinal - 5 mai 2026</div>
+        <div class="info-line"><span class="info-dot"></span> Rythmes du Désert - 4 mai 2026</div>
+        <div class="info-line"><span class="info-dot"></span> Soirée Détente - 3 mai 2026</div>
+        <div class="info-line"><span class="info-dot"></span> Journal Parlé - 2 mai 2026</div>
+    </div>
+</div>
+
+<!-- ============ CONTACT TAB ============ -->
+<div class="tab-content" id="tab-contact">
+    <div class="content-section">
+        <div class="section-title-content">Contactez Sahara FM</div>
+        <div class="info-line"><span class="info-dot"></span> 📞 Studio : +227 XX XX XX XX</div>
+        <div class="info-line"><span class="info-dot"></span> 📧 contact@saharafm.ne</div>
+        <div class="info-line"><span class="info-dot"></span> 📍 Quartier Administratif, Agadez</div>
+        <div class="info-line"><span class="info-dot"></span> 📱 WhatsApp : +227 XX XX XX XX</div>
+    </div>
+</div>
+
+<!-- ============ BOTTOM NAV ============ -->
+<nav class="bottom-nav">
+    <button class="bottom-item active" data-bottom="direct"><i class="fas fa-tower-broadcast"></i>Direct</button>
+    <button class="bottom-item" data-bottom="grille"><i class="fas fa-calendar-days"></i>Grille</button>
+    <button class="bottom-item" data-bottom="infos"><i class="fas fa-newspaper"></i>Infos</button>
+    <button class="bottom-item" data-bottom="archives"><i class="fas fa-folder-open"></i>Archives</button>
+    <button class="bottom-item" data-bottom="contact"><i class="fas fa-phone"></i>Contact</button>
+</nav>
+
+<!-- ============ SCRIPTS ============ -->
+<script>
+(function(){
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+    
+    let audio = null;
+    let isPlaying = false;
+    let volume = 85;
+    let toastTimer;
+    
+    function toast(msg) {
+        clearTimeout(toastTimer);
+        $('#toastMsg').textContent = msg;
+        $('#toastEl').classList.add('show');
+        toastTimer = setTimeout(() => $('#toastEl').classList.remove('show'), 2500);
+    }
+    
+    // Clock
+    function updateClock() {
+        const n = new Date();
+        $('#studioClock').textContent = String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+    }
+    updateClock();
+    setInterval(updateClock, 30000);
+    
+    // Listeners
+    function updateListeners() {
+        const k = 500 + Math.floor(Math.random() * 50);
+        $('#auditeursCount').textContent = '+'+k+'k';
+    }
+    updateListeners();
+    setInterval(updateListeners, 8000);
+    
+    // Schedule
+    const schedule = [
+        {s:6,e:10,show:'Sahara Matinal',host:'Amadou & l\'équipe'},
+        {s:10,e:13,show:'Info Midi',host:'Journal & débats'},
+        {s:13,e:16,show:'Rythmes du Désert',host:'Musique touareg'},
+        {s:16,e:19,show:'Jeunesse FM',host:'Culture & éducation'},
+        {s:19,e:22,show:'Soirée Détente',host:'Dédicaces & musique'},
+        {s:22,e:24,show:'Nuits Sahariennes',host:'Ambiance nocturne'},
+        {s:0,e:6,show:'Nuits Sahariennes',host:'Rediffusion'}
+    ];
+    
+    function updateGrille() {
+        $('#grilleList').innerHTML = schedule.map(s => 
+            `<div class="info-line"><span class="info-dot"></span> <span class="info-bold">${String(s.s).padStart(2,'0')}:00-${String(s.e).padStart(2,'0')}:00</span> — ${s.show} <span style="color:#666;">(${s.host})</span></div>`
+        ).join('');
+    }
+    
+    function updateCurrentShow() {
+        const h = new Date().getHours();
+        const c = schedule.find(s => h >= s.s && h < s.e) || schedule[6];
+        $('#showName').textContent = c.show;
+        $('#showInfo').textContent = c.host + ' • ' + String(c.s).padStart(2,'0')+':00-'+String(c.e).padStart(2,'0')+':00';
+    }
+    updateGrille();
+    updateCurrentShow();
+    setInterval(updateCurrentShow, 60000);
+    
+    // Play/Pause
+    function togglePlay() {
+        isPlaying = !isPlaying;
+        const icon = $('#btnPlayIcon');
+        
+        if (isPlaying) {
+            if (!audio) {
+                audio = new Audio('https://caster.fm/sahar_fm_agadez');
+                audio.volume = volume / 100;
+                audio.addEventListener('error', () => {
+                    isPlaying = false;
+                    $('#playerCard').classList.remove('playing');
+                    $('#vuMeter').classList.remove('playing');
+                    icon.className = 'fas fa-play';
+                    toast('Flux indisponible');
+                });
+            }
+            audio.play().catch(() => toast('Appuyez pour le son'));
+            $('#playerCard').classList.add('playing');
+            $('#vuMeter').classList.add('playing');
+            icon.className = 'fas fa-pause';
+            toast('En direct • Sahara FM');
+        } else {
+            if (audio) audio.pause();
+            $('#playerCard').classList.remove('playing');
+            $('#vuMeter').classList.remove('playing');
+            icon.className = 'fas fa-play';
+            toast('Pause');
+        }
+    }
+    
+    // Volume
+    function setVolume(val) {
+        volume = val;
+        $('#sliderVolume').value = val;
+        $('#volValue').textContent = val + '%';
+        if (audio) audio.volume = val / 100;
+        localStorage.setItem('sfm-vol', val);
+    }
+    
+    $('#btnPlay').addEventListener('click', togglePlay);
+    $('#sliderVolume').addEventListener('input', () => setVolume(parseInt($('#sliderVolume').value)));
+    $('#btnVolDown').addEventListener('click', () => setVolume(Math.max(0, volume - 10)));
+    $('#btnVolUp').addEventListener('click', () => setVolume(Math.min(100, volume + 10)));
+    
+    // Tabs
+    function switchTab(tab) {
+        $$('.tab-content').forEach(t => t.classList.remove('active'));
+        const el = $('#tab-' + tab);
+        if (el) el.classList.add('active');
+        
+        $$('#navTabs .nav-tab').forEach(b => b.classList.remove('active'));
+        const nt = document.querySelector('#navTabs .nav-tab[data-tab="'+tab+'"]');
+        if (nt) nt.classList.add('active');
+        
+        $$('.bottom-item').forEach(b => b.classList.remove('active'));
+        const bi = document.querySelector('.bottom-item[data-bottom="'+tab+'"]');
+        if (bi) bi.classList.add('active');
+    }
+    
+    $$('#navTabs .nav-tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+    $$('.bottom-item').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.bottom)));
+    
+    // Chat
+    window.sendChat = function() {
+        const input = $('#chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        const div = document.createElement('div');
+        div.className = 'chat-msg user';
+        div.textContent = 'Vous : ' + msg;
+        $('#chatBox').appendChild(div);
+        $('#chatBox').scrollTop = $('#chatBox').scrollHeight;
+        input.value = '';
+        
+        setTimeout(() => {
+            const r = document.createElement('div');
+            r.className = 'chat-msg radio';
+            r.textContent = 'Sahara FM : Merci ! 🏜️📻';
+            $('#chatBox').appendChild(r);
+            $('#chatBox').scrollTop = $('#chatBox').scrollHeight;
+        }, 2000);
+    };
+    
+    // Keyboard
+    document.addEventListener('keydown', e => {
+        if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+    });
+    
+    // Init volume
+    const sv = localStorage.getItem('sfm-vol');
+    if (sv) setVolume(parseInt(sv));
+    
+    console.log('🏜️ Sahara FM 97 MHz • La Radio des Temps Modernes');
+})();
+</script>
+
+</body>
+</html>
