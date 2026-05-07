@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0a0a0a">
-    <meta name="description" content="Sahara FM 97 MHz - La Radio des temps modernes - Agadez, Niger">
+    <meta name="description" content="Sahara FM 97 MHz - La Radio des Temps Modernes - Agadez, Niger">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Sahara FM">
@@ -120,7 +120,7 @@
             font-weight: 500;
         }
         
-        /* ============ FREQUENCY BARS (VU METER) ============ */
+        /* ============ VU METER ============ */
         .vu-meter {
             display: flex;
             align-items: flex-end;
@@ -590,6 +590,15 @@
         .tab-content.active {
             display: block;
         }
+        
+        /* ============ STREAM URL INPUT ============ */
+        .stream-config {
+            display: none;
+        }
+        
+        .stream-config.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -607,7 +616,7 @@
     </div>
 </div>
 
-<!-- ============ VU METER (BARRES DE FRÉQUENCE) ============ -->
+<!-- ============ VU METER ============ -->
 <div class="vu-meter" id="vuMeter">
     <div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div><div class="vu-bar"></div>
 </div>
@@ -633,7 +642,7 @@
         </div>
         <span class="studio-loc">STUDIO AGADEZ</span>
     </div>
-    <div class="studio-clock" id="studioClock">21:53</div>
+    <div class="studio-clock" id="studioClock">00:00</div>
 </div>
 
 <!-- ============ NAV TABS ============ -->
@@ -661,6 +670,18 @@
                 <button class="btn-small-round" id="btnVolUp"><i class="fas fa-volume-up"></i></button>
             </div>
         </div>
+    </div>
+
+    <!-- Configuration Stream (caché par défaut) -->
+    <div class="content-section stream-config" id="streamConfig">
+        <div class="section-label">⚙️ CONFIGURATION FLUX</div>
+        <div class="info-line">
+            <span>URL du flux :</span>
+            <input type="text" id="customStreamUrl" placeholder="https://..." style="flex:1;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;padding:6px 10px;color:#fff;font-size:11px;">
+        </div>
+        <button class="btn-play-round" style="width:auto;border-radius:10px;padding:8px 16px;font-size:11px;margin-top:8px;" onclick="setCustomStream()">
+            Appliquer
+        </button>
     </div>
 
     <!-- Volume -->
@@ -743,11 +764,19 @@
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
     
+    // ========== STREAM CONFIG ==========
+    // URL DU FLUX AUDIO - CHANGEZ CETTE URL PAR LE VRAI FLUX
+    const DEFAULT_STREAM_URL = 'https://stream-162.zeno.fm/abc123?type=mp3';
+    
     let audio = null;
     let isPlaying = false;
     let volume = 85;
     let toastTimer;
     
+    // Charger l'URL personnalisée si elle existe
+    let streamUrl = localStorage.getItem('sfm-stream-url') || DEFAULT_STREAM_URL;
+    
+    // ========== TOAST ==========
     function toast(msg) {
         clearTimeout(toastTimer);
         $('#toastMsg').textContent = msg;
@@ -755,7 +784,7 @@
         toastTimer = setTimeout(() => $('#toastEl').classList.remove('show'), 2500);
     }
     
-    // Clock
+    // ========== CLOCK ==========
     function updateClock() {
         const n = new Date();
         $('#studioClock').textContent = String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
@@ -763,7 +792,7 @@
     updateClock();
     setInterval(updateClock, 30000);
     
-    // Listeners
+    // ========== LISTENERS ==========
     function updateListeners() {
         const k = 500 + Math.floor(Math.random() * 50);
         $('#auditeursCount').textContent = '+'+k+'k';
@@ -771,7 +800,7 @@
     updateListeners();
     setInterval(updateListeners, 8000);
     
-    // Schedule
+    // ========== SCHEDULE ==========
     const schedule = [
         {s:6,e:10,show:'Sahara Matinal',host:'Amadou & l\'équipe'},
         {s:10,e:13,show:'Info Midi',host:'Journal & débats'},
@@ -798,38 +827,58 @@
     updateCurrentShow();
     setInterval(updateCurrentShow, 60000);
     
-    // Play/Pause
+    // ========== PLAY/PAUSE ==========
     function togglePlay() {
         isPlaying = !isPlaying;
         const icon = $('#btnPlayIcon');
         
         if (isPlaying) {
             if (!audio) {
-                audio = new Audio('https://caster.fm/sahar_fm_agadez');
+                audio = new Audio(streamUrl);
                 audio.volume = volume / 100;
-                audio.addEventListener('error', () => {
+                audio.preload = 'auto';
+                
+                audio.addEventListener('playing', () => {
+                    toast('📻 En direct • Sahara FM 97 MHz');
+                });
+                
+                audio.addEventListener('error', (e) => {
+                    console.log('Erreur audio:', e);
                     isPlaying = false;
                     $('#playerCard').classList.remove('playing');
                     $('#vuMeter').classList.remove('playing');
                     icon.className = 'fas fa-play';
-                    toast('Flux indisponible');
+                    $('#directBadge').style.opacity = '0.5';
+                    toast('⚠️ Flux audio indisponible');
+                });
+                
+                audio.addEventListener('waiting', () => {
+                    toast('⏳ Chargement du flux...');
                 });
             }
-            audio.play().catch(() => toast('Appuyez pour le son'));
+            
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    console.log('Play error:', err);
+                    toast('🔊 Appuyez pour lancer le son');
+                });
+            }
+            
             $('#playerCard').classList.add('playing');
             $('#vuMeter').classList.add('playing');
             icon.className = 'fas fa-pause';
-            toast('En direct • Sahara FM');
+            $('#directBadge').style.opacity = '1';
         } else {
             if (audio) audio.pause();
             $('#playerCard').classList.remove('playing');
             $('#vuMeter').classList.remove('playing');
             icon.className = 'fas fa-play';
-            toast('Pause');
+            toast('⏸️ Pause');
         }
     }
     
-    // Volume
+    // ========== VOLUME ==========
     function setVolume(val) {
         volume = val;
         $('#sliderVolume').value = val;
@@ -838,12 +887,50 @@
         localStorage.setItem('sfm-vol', val);
     }
     
+    // ========== CUSTOM STREAM URL ==========
+    window.setCustomStream = function() {
+        const url = $('#customStreamUrl').value.trim();
+        if (!url) {
+            toast('⚠️ Veuillez entrer une URL');
+            return;
+        }
+        
+        streamUrl = url;
+        localStorage.setItem('sfm-stream-url', url);
+        
+        // Arrêter l'audio en cours
+        if (audio) {
+            audio.pause();
+            audio = null;
+        }
+        isPlaying = false;
+        $('#playerCard').classList.remove('playing');
+        $('#vuMeter').classList.remove('playing');
+        $('#btnPlayIcon').className = 'fas fa-play';
+        
+        toast('✅ Nouveau flux configuré !');
+        $('#streamConfig').classList.remove('show');
+    };
+    
+    // Afficher/cacher la config stream (appui long sur le titre)
+    let pressTimer;
+    $('#showName').addEventListener('touchstart', () => {
+        pressTimer = setTimeout(() => {
+            $('#streamConfig').classList.toggle('show');
+            $('#customStreamUrl').value = streamUrl;
+            toast('⚙️ Configuration du flux');
+        }, 2000);
+    });
+    $('#showName').addEventListener('touchend', () => clearTimeout(pressTimer));
+    $('#showName').addEventListener('touchmove', () => clearTimeout(pressTimer));
+    
+    // ========== EVENT LISTENERS ==========
     $('#btnPlay').addEventListener('click', togglePlay);
     $('#sliderVolume').addEventListener('input', () => setVolume(parseInt($('#sliderVolume').value)));
     $('#btnVolDown').addEventListener('click', () => setVolume(Math.max(0, volume - 10)));
     $('#btnVolUp').addEventListener('click', () => setVolume(Math.min(100, volume + 10)));
     
-    // Tabs
+    // ========== TABS ==========
     function switchTab(tab) {
         $$('.tab-content').forEach(t => t.classList.remove('active'));
         const el = $('#tab-' + tab);
@@ -861,7 +948,7 @@
     $$('#navTabs .nav-tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
     $$('.bottom-item').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.bottom)));
     
-    // Chat
+    // ========== CHAT ==========
     window.sendChat = function() {
         const input = $('#chatInput');
         const msg = input.value.trim();
@@ -874,24 +961,43 @@
         input.value = '';
         
         setTimeout(() => {
+            const replies = [
+                'Merci pour votre message ! 🏜️📻',
+                'Bienvenue sur Sahara FM ! ✨',
+                '97 MHz, la radio du désert ! 🌵',
+                'Restez à l\'écoute ! 🎵',
+                'Agadez vous salue ! 👋'
+            ];
             const r = document.createElement('div');
             r.className = 'chat-msg radio';
-            r.textContent = 'Sahara FM : Merci ! 🏜️📻';
+            r.textContent = 'Sahara FM : ' + replies[Math.floor(Math.random()*replies.length)];
             $('#chatBox').appendChild(r);
             $('#chatBox').scrollTop = $('#chatBox').scrollHeight;
         }, 2000);
     };
     
-    // Keyboard
+    // ========== KEYBOARD ==========
     document.addEventListener('keydown', e => {
         if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+        if (e.code === 'ArrowUp') { e.preventDefault(); setVolume(Math.min(100, volume + 5)); }
+        if (e.code === 'ArrowDown') { e.preventDefault(); setVolume(Math.max(0, volume - 5)); }
     });
     
-    // Init volume
-    const sv = localStorage.getItem('sfm-vol');
-    if (sv) setVolume(parseInt(sv));
+    // ========== INIT ==========
+    function init() {
+        const savedVol = localStorage.getItem('sfm-vol');
+        if (savedVol) setVolume(parseInt(savedVol));
+        
+        updateClock();
+        updateListeners();
+        updateCurrentShow();
+        updateGrille();
+        
+        console.log('🏜️ Sahara FM 97 MHz • La Radio des Temps Modernes');
+        console.log('🔗 Stream URL:', streamUrl);
+    }
     
-    console.log('🏜️ Sahara FM 97 MHz • La Radio des Temps Modernes');
+    init();
 })();
 </script>
 
